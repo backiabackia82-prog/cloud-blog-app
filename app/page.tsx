@@ -1,9 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 export default async function Home() {
-  noStore(); // <-- Next.js 16-la dynamic rendering-ku itha use pannanum
+  await connection(); // <-- Next.js 16 dynamic rendering-ku itha use pannanum
 
   const { data: posts, error } = await supabase.from('posts').select('*');
   const typedPosts = (posts || []) as any[];
