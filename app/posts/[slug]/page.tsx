@@ -1,46 +1,19 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
-export default function PostPage() {
-  const params = useParams();
-  const slug = params?.slug as string;
+export const dynamic = 'force-dynamic';
 
-  const [post, setPost] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
 
-  useEffect(() => {
-    if (!slug) return;
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('slug', slug)
+    .single();
 
-    async function fetchPost() {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-
-      if (error) {
-        setError(error.message);
-      } else {
-        setPost(data);
-      }
-      setLoading(false);
-    }
-
-    fetchPost();
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <main style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-        <p>Loading post...</p>
-      </main>
-    );
-  }
+  const post = data as any;
 
   if (error || !post) {
     return (
