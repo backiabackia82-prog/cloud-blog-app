@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-
-export const dynamic = 'force-dynamic'; // <-- Ithu thaan antha prerender error-a fix pannum!
+import { unstable_noStore as noStore } from 'next/cache';
 
 export default async function Home() {
+  noStore(); // <-- Next.js 16-la dynamic rendering-ku itha use pannanum
+
   const { data: posts, error } = await supabase.from('posts').select('*');
   const typedPosts = (posts || []) as any[];
 
