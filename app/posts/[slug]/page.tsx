@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-
-export const dynamic = 'force-dynamic';
+import { connection } from 'next/server';
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+  await connection(); // <-- Next.js 16 dynamic route rendering-ku itha use pannanum
+
   const resolvedParams = await params;
   const { slug } = resolvedParams;
 
