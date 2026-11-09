@@ -2,49 +2,41 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 export default async function Home() {
-  // Fetch all posts from Supabase database
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select('*')
-    .order('id', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching posts:', error);
-  }
+  const { data: posts, error } = await supabase.from('posts').select('*');
+  const typedPosts = (posts || []) as any[];
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1>My Cloud Blog</h1>
         <Link 
           href="/create" 
-          style={{ padding: '0.5rem 1rem', background: '#0070f3', color: 'white', borderRadius: '4px', textDecoration: 'none' }}
+          style={{ background: '#0070f3', color: '#fff', padding: '0.5rem 1rem', borderRadius: '5px', textDecoration: 'none' }}
         >
           Create Post
         </Link>
       </div>
-      
-      <h2 style={{ marginTop: '1.5rem', fontSize: '1.2rem', color: '#555' }}>Latest Blog Posts</h2>
-      
-      <hr style={{ margin: '1rem 0' }} />
 
-      {posts && posts.length === 0 ? (
-        <p>No posts found.</p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {posts?.map((post) => (
-            <div key={post.id} style={{ borderBottom: '1px solid #eaeaea', paddingBottom: '1rem' }}>
-              {/* Clickable Title pointing to dynamic slug page */}
-              <Link href={`/posts/${post.slug}`} style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#0070f3', textDecoration: 'none' }}>
-                {post.title}
-              </Link>
-              <p style={{ marginTop: '0.5rem', color: '#333' }}>
-                {post.content || post.markdown}
-              </p>
+      <h2>Latest Blog Posts</h2>
+      {error && <p style={{ color: 'red' }}>Error loading posts: {error.message}</p>}
+      
+      <div style={{ marginTop: '1rem' }}>
+        {typedPosts.length === 0 ? (
+          <p>No posts found. Create your first post!</p>
+        ) : (
+          typedPosts.map((post: any) => (
+            <div key={post.id} style={{ border: '1px solid #eaeaea', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+              <h3>
+                <Link href={`/posts/${post.slug}`} style={{ color: '#0070f3', textDecoration: 'none' }}>
+                  {post.title}
+                </Link>
+              </h3>
+              <p style={{ color: '#666', fontSize: '0.9rem' }}>Slug: {post.slug}</p>
+              <p style={{ marginTop: '0.5rem' }}>{post.content || post.markdown}</p>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </main>
   );
 }
