@@ -1,10 +1,15 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { connection } from 'next/server';
+
+// Next.js-ku dynamic slug routes-a build-time la handle panna sollaitha function
+export async function generateStaticParams() {
+  const { data: posts } = await supabase.from('posts').select('slug');
+  return (posts || []).map((post: any) => ({
+    slug: post.slug,
+  }));
+}
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
-  await connection(); // <-- Next.js 16 dynamic route rendering-ku itha use pannanum
-
   const resolvedParams = await params;
   const { slug } = resolvedParams;
 
