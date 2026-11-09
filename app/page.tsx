@@ -1,12 +1,26 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { connection } from 'next/server';
 
-export default async function Home() {
-  await connection(); // <-- Next.js 16 dynamic rendering-ku itha use pannanum
+export default function Home() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { data: posts, error } = await supabase.from('posts').select('*');
-  const typedPosts = (posts || []) as any[];
+  useEffect(() => {
+    async function fetchPosts() {
+      const { data, error } = await supabase.from('posts').select('*');
+      if (error) {
+        setError(error.message);
+      } else {
+        setPosts(data || []);
+      }
+      setLoading(false);
+    }
+    fetchPosts();
+  }, []);
 
   return (
     <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
@@ -21,13 +35,14 @@ export default async function Home() {
       </div>
 
       <h2>Latest Blog Posts</h2>
-      {error && <p style={{ color: 'red' }}>Error loading posts: {error.message}</p>}
+      {loading && <p>Loading posts...</p>}
+      {error && <p style={{ color: 'red' }}>Error loading posts: {error}</p>}
       
       <div style={{ marginTop: '1rem' }}>
-        {typedPosts.length === 0 ? (
+        {!loading && posts.length === 0 ? (
           <p>No posts found. Create your first post!</p>
         ) : (
-          typedPosts.map((post: any) => (
+          posts.map((post: any) => (
             <div key={post.id} style={{ border: '1px solid #eaeaea', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
               <h3>
                 <Link href={`/posts/${post.slug}`} style={{ color: '#0070f3', textDecoration: 'none' }}>
